@@ -1,38 +1,50 @@
-const express = require('express')
-const app = express()
-const connectDB = require('./config/db') 
-const dotenv = require('dotenv')
-const {notFound, errorHandler} = require('./middleware/errorMiddleware')
-const userRoutes = require('./routes/userRoutes')
-const productRoutes = require('./routes/productRoutes')
-const orderRoutes = require('./routes/orderRoutes')
-const uploadRoutes = require('./routes/uploadRoutes')
-const path = require('path') 
+const express = require('express');
+const connectDB = require('./config/db');
+const dotenv = require('dotenv');
+const { notFound, errorHandler } = require('./middleware/errorMiddleware');
+const userRoutes = require('./routes/userRoutes');
+const productRoutes = require('./routes/productRoutes');
+const orderRoutes = require('./routes/orderRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
+const path = require('path');
+const morgan = require('morgan');
 
+dotenv.config();
 
-dotenv.config()
+connectDB();
 
-connectDB()
+const app = express();
 
-app.use(express.json())
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
 
-app.get('/', (req,res)=>{
-    res.send('API RUNING....')
-})
- 
-app.use('/api/products', productRoutes) 
-app.use('/api/users', userRoutes)
-app.use('/api/orders', orderRoutes)
-app.use('/api/upload', uploadRoutes)
+app.use(express.json());
 
-app.get('/api/config/paypal', (req,res) => res.send(process.env.PAYPAL_CLIENT_ID))
+app.get('/', (req, res) => {
+  res.send('API RUNING....');
+});
 
-app.use('/uploads', express.static(path.join(__dirname, '/uploads')))
+app.use('/api/products', productRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/upload', uploadRoutes);
 
-app.use(notFound)
+app.get('/api/config/paypal', (req, res) =>
+  res.send(process.env.PAYPAL_CLIENT_ID)
+);
 
-app.use(errorHandler)
+app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 
-const PORT = process.env.PORT || 5000
+app.use(notFound);
 
-app.listen (PORT, console.log(`Server runing in ${process.env.NODE_ENV} mode , on port ${PORT} `))
+app.use(errorHandler);
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(
+  PORT,
+  console.log(
+    `Server runing in ${process.env.NODE_ENV} mode , on port ${PORT} `
+  )
+);
